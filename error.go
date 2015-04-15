@@ -15,12 +15,18 @@ type Error interface {
 	error
 	fmt.Stringer
 	json.Marshaler
-	GetStatusCode() int                               // Return the error's status code
-	GetMessage() string                               // Return the error's message
-	GetData() interface{}                             // Return the error's associated data
-	GetPrivateRepresentation() map[string]interface{} // Return a private representation of the error
-	GetStackTrace() []StackFrame                      // Return the stack trace associated with this error, if any
-	RecordStackTrace() Error                          // Records a stack track and return itself
+	// GetStatusCode return the error's status code
+	GetStatusCode() int
+	// GetMessage returns the error's message
+	GetMessage() string
+	// GetData returns the error's associated data
+	GetData() interface{}
+	// GetPrivateRepresentation a private representation of the error. Useful for logging.
+	GetPrivateRepresentation() map[string]interface{}
+	// GetStackTrace returns the stack trace associated with this error, if any
+	GetStackTrace() []StackFrame
+	// RecordStackTrace captures a stack track and return the error instance
+	RecordStackTrace() Error
 }
 
 // Struct ErrorInstance incorporates an error and associates it with an HTTP status code (assumed to be 500
