@@ -16,17 +16,17 @@ type Error interface {
 	fmt.Stringer
 	json.Marshaler
 	// GetStatusCode return the error's status code
-	GetStatusCode() int
+	StatusCode() int
 	// GetMessage returns the error's message
-	GetMessage() string
+	Message() string
 	// GetData returns the error's associated data
-	GetData() interface{}
+	Data() interface{}
 	// GetPrivateRepresentation a private representation of the error. Useful for logging.
-	GetPrivateRepresentation() map[string]interface{}
+	PrivateRepresentation() map[string]interface{}
 	// GetStackTrace returns the stack trace associated with this error, if any
-	GetStackTrace() []StackFrame
+	StackTrace() []StackFrame
 	// RecordStackTrace captures a stack track and return the error instance
-	RecordStackTrace() Error
+	CaptureStackTrace() Error
 }
 
 // Struct ErrorInstance incorporates an error and associates it with an HTTP status code (assumed to be 500
@@ -40,17 +40,17 @@ type Error interface {
 // For status codes that indicate user errors ([400-499]), the struct allows public consumers to see
 // the actual message that was provided at initialization time.
 type ErrorInstance struct {
-	StatusCode int          // The HTTP status code
-	Message    string       // A message associated with the error. May be overwritten if the status code is >= 500
-	Data       interface{}  // Assorted data associated with the error, for logging purposes
-	StackTrace []StackFrame // The stack trace associated with the error, for logging purposes
+	statusCode int          // The HTTP status code
+	message    string       // A message associated with the error. May be overwritten if the status code is >= 500
+	data       interface{}  // Assorted data associated with the error, for logging purposes
+	stackTrace []StackFrame // The stack trace associated with the error, for logging purposes
 }
 
 // NewError builds a new Error instance; the `format` and `arguments` parameters work as in `fmt.Sprintf()`
 func NewError(statusCode int, format string, arguments ...interface{}) Error {
 	return &ErrorInstance{
-		StatusCode: statusCode,
-		Message:    fmt.Sprintf(format, arguments...),
+		statusCode: statusCode,
+		message:    fmt.Sprintf(format, arguments...),
 	}
 }
 
@@ -62,16 +62,16 @@ func NewError(statusCode int, format string, arguments ...interface{}) Error {
 func NewErrorWithError(err error) Error {
 	if e, ok := err.(Error); ok {
 		return &ErrorInstance{
-			StatusCode: e.GetStatusCode(),
-			Message:    e.GetMessage(),
-			Data:       e.GetData(),
-			StackTrace: e.GetStackTrace(),
+			statusCode: e.StatusCode(),
+			message:    e.Message(),
+			data:       e.Data(),
+			stackTrace: e.StackTrace(),
 		}
 	}
 
 	return &ErrorInstance{
-		StatusCode: 500,
-		Message:    err.Error(),
+		statusCode: 500,
+		message:    err.Error(),
 	}
 }
 
@@ -81,11 +81,11 @@ var _ Error = &ErrorInstance{}
 
 // Satisfy the error, fmt.Stringer, and json.Marshaler interfaces
 func (e *ErrorInstance) Error() string {
-	if e.StatusCode > 499 {
+	if e.statusCode > 499 {
 		return "An server error has occurred."
 	}
 
-	return e.Message
+	return e.message
 }
 
 func (e *ErrorInstance) String() string {
@@ -94,7 +94,7 @@ func (e *ErrorInstance) String() string {
 
 func (e *ErrorInstance) MarshalJSON() ([]byte, error) {
 	result := map[string]interface{}{
-		"statusCode": e.StatusCode,
+		"statusCode": e.statusCode,
 		"message":    e.Error(),
 	}
 
@@ -104,30 +104,30 @@ func (e *ErrorInstance) MarshalJSON() ([]byte, error) {
 // Satisfy the Error interface
 
 // Returns the status code associated with e
-func (e *ErrorInstance) GetStatusCode() int {
-	return e.StatusCode
+func (e *ErrorInstance) StatusCode() int {
+	return e.statusCode
 }
 
 // Returns the message associated with e
-func (e *ErrorInstance) GetMessage() string {
-	return e.Message
+func (e *ErrorInstance) Message() string {
+	return e.message
 }
 
 // Returns the data associated with e
-func (e *ErrorInstance) GetData() interface{} {
-	return e.Data
+func (e *ErrorInstance) Data() interface{} {
+	return e.data
 }
 
 // Returns a private representation of e
-func (e *ErrorInstance) GetPrivateRepresentation() map[string]interface{} {
+func (e *ErrorInstance) PrivateRepresentation() map[string]interface{} {
 	return map[string]interface{}{
-		"statusCode": e.StatusCode,
-		"message":    e.Message,
-		"data":       e.Data,
-		"stackTrace": e.StackTrace,
+		"statusCode": e.statusCode,
+		"message":    e.message,
+		"data":       e.data,
+		"stackTrace": e.stackTrace,
 	}
 }
 
-func (e *ErrorInstance) GetStackTrace() []StackFrame {
-	return e.StackTrace
+func (e *ErrorInstance) StackTrace() []StackFrame {
+	return e.stackTrace
 }

@@ -100,8 +100,8 @@ func function(pc uintptr) []byte {
 	return name
 }
 
-func (e *ErrorInstance) RecordStackTrace() Error {
-	e.StackTrace = stack(3)
+func (e *ErrorInstance) CaptureStackTrace() Error {
+	e.stackTrace = stack(2)
 
 	return e
 }

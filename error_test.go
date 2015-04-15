@@ -12,10 +12,10 @@ func TestError(t *testing.T) {
 
 	// Create a new error from a traditional Go error
 
-	e := NewErrorWithError(err)
+	e := NewErrorWithError(err).CaptureStackTrace()
 
-	if e.GetStatusCode() != 500 {
-		t.Errorf("Expected status code 500, got %d instead", e.GetStatusCode())
+	if e.StatusCode() != 500 {
+		t.Errorf("Expected status code 500, got %d instead", e.StatusCode())
 	}
 
 	if e.Error() == m {
@@ -34,5 +34,9 @@ func TestError(t *testing.T) {
 
 	if string(data) != `{"message":"An server error has occurred.","statusCode":500}` {
 		t.Errorf("Unexpected JSON marshal received: %s", string(data))
+	}
+
+	if len(e.StackTrace()) != 3 {
+		t.Errorf("Unexpected stack trace: %#v", e.StackTrace())
 	}
 }
