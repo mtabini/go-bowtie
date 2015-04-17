@@ -1,3 +1,6 @@
+// Package bowtie provides a Web middleware for Go apps.
+//
+// More information at https://github.com/mtabini/go-bowtie
 package bowtie
 
 import (
