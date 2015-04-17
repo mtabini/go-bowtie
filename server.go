@@ -83,7 +83,7 @@ func (s *Server) Run(c Context) {
 			s.middlewares[mwIndex](c, next)
 			mwIndex += 1
 
-			if c.Response().Written {
+			if c.Response().Written() {
 				return
 			}
 		}

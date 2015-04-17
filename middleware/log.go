@@ -16,7 +16,7 @@ func PlaintextLogger(c bowtie.Context) {
 	req := c.Request()
 	res := c.Response()
 
-	log.Printf("%s %s %s %d %f", req.RemoteAddr, req.Method, req.URL, res.Status, float64(c.GetRunningTime())/float64(time.Second))
+	log.Printf("%s %s %s %d %f", req.RemoteAddr, req.Method, req.URL, res.Status(), float64(c.GetRunningTime())/float64(time.Second))
 }
 
 func MakeBunyanLogger(logger bunyan.Logger) Logger {
@@ -27,18 +27,20 @@ func MakeBunyanLogger(logger bunyan.Logger) Logger {
 		e := bunyan.NewLogEntry(bunyan.Info, fmt.Sprintf("%s %s", req.Method, req.URL.RequestURI()))
 
 		e.SetRequest(req)
-		e.SetResponseStatusCode(res.Status)
+		e.SetResponseStatusCode(res.Status())
 
 		e.SetCompletedIn(fmt.Sprintf("%v", c.GetRunningTime()))
 
-		if len(res.Errors) > 0 {
-			errs := make([]map[string]interface{}, len(res.Errors))
+		errs := res.Errors()
 
-			for index, err := range res.Errors {
-				errs[index] = err.PrivateRepresentation()
+		if len(errs) > 0 {
+			outErrs := make([]map[string]interface{}, len(errs))
+
+			for index, err := range errs {
+				outErrs[index] = err.PrivateRepresentation()
 			}
 
-			outErr, _ := json.Marshal(errs)
+			outErr, _ := json.Marshal(outErrs)
 
 			e.Level = bunyan.Error
 			e.SetResponseError(errors.New(string(outErr)))

@@ -221,7 +221,7 @@ func (r *Router) ServeHTTP(c bowtie.Context, next func()) {
 			for index < len(handles) {
 				handles[index](c)
 
-				if c.Response().Written {
+				if c.Response().Written() {
 					return
 				}
 

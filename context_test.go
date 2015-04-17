@@ -54,7 +54,7 @@ func TestContext(t *testing.T) {
 		t.Error("Unexpectedly received the wrong request object")
 	}
 
-	if c.Response().Written {
+	if c.Response().Written() {
 		t.Error("Context unexpectedly reports that it has data")
 	}
 
@@ -80,13 +80,13 @@ func TestContext(t *testing.T) {
 		t.Errorf("Expected 12 bytes written, got %d instead", n)
 	}
 
-	if len(c.Response().Errors) > 0 {
+	if len(c.Response().Errors()) > 0 {
 		t.Errorf("Context unexpectedly has errors after writing JSON: %#v", c.Response().Errors)
 	}
 
 	c.Response().WriteJSONOrError(map[string]interface{}{"test": 123}, errors.New("Error"))
 
-	if len(c.Response().Errors) == 0 {
+	if len(c.Response().Errors()) == 0 {
 		t.Error("Context unexpectedly has no errors after writing JSON with error")
 	}
 }

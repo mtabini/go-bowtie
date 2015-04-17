@@ -12,13 +12,13 @@ type ContextFactory func(previous Context) Context
 
 // Interface Context represents a server's context, which provides information used by the
 // middleware. The basic context deals primarily with providing an interface to the request
-// and response, as well as error management
+// and response
 type Context interface {
 	// Request returns the request object associated with this request
 	Request() *http.Request
 
 	// Response returns the response writer associated with this request
-	Response() *ResponseWriter
+	Response() ResponseWriter
 
 	// GetRunningTime returns the amount of time during which this request has been running
 	GetRunningTime() time.Duration
@@ -31,7 +31,7 @@ var _ Context = &ContextInstance{}
 // Bowtie
 type ContextInstance struct {
 	r         *http.Request
-	w         *ResponseWriter
+	w         ResponseWriter
 	startTime time.Time
 }
 
@@ -51,7 +51,7 @@ func (c *ContextInstance) Request() *http.Request {
 }
 
 // Response returns the response writer assocaited with the context
-func (c *ContextInstance) Response() *ResponseWriter {
+func (c *ContextInstance) Response() ResponseWriter {
 	return c.w
 }
 

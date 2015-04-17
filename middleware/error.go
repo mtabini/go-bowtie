@@ -9,7 +9,7 @@ func ErrorReporter(c bowtie.Context, next func()) {
 
 	res := c.Response()
 
-	errs := res.Errors
+	errs := res.Errors()
 	outErrs := []bowtie.Error{}
 
 	if len(errs) > 0 {
