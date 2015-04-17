@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mtabini/bowtie"
+	"github.com/mtabini/go-bowtie"
 	"github.com/mtabini/go-bunyan"
 	"log"
 	"time"

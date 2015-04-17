@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/mtabini/bowtie"
+	"github.com/mtabini/go-bowtie"
 )
 
 func ErrorReporter(c bowtie.Context, next func()) {
