@@ -9,23 +9,32 @@ type ResponseWriter struct {
 	http.ResponseWriter
 	Written bool
 	Errors  []Error
+	Status  int
 }
 
 func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 	return &ResponseWriter{
 		ResponseWriter: w,
 		Errors:         []Error{},
+		Status:         200,
 	}
 }
 
 // Add error safely adds a new error to the context, converting it to bowtie.Error if appropriate
 func (r *ResponseWriter) AddError(err error) {
+	if e, ok := err.(Error); ok {
+		r.WriteHeader(e.StatusCode())
+	} else {
+		r.WriteHeader(500)
+	}
+
 	r.Errors = append(r.Errors, NewErrorWithError(err))
 }
 
 // WriteHeader writes a status header
 func (r *ResponseWriter) WriteHeader(status int) {
 	r.ResponseWriter.WriteHeader(status)
+	r.Status = status
 	r.Written = true
 }
 

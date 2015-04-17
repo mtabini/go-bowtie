@@ -2,6 +2,7 @@ package bowtie
 
 import (
 	"net/http"
+	"time"
 )
 
 // ContextFactory is a function that creates a context starting from previous context.
@@ -18,6 +19,9 @@ type Context interface {
 
 	// Response returns the response writer associated with this request
 	Response() *ResponseWriter
+
+	// GetRunningTime returns the amount of time during which this request has been running
+	GetRunningTime() time.Duration
 }
 
 var _ Context = &ContextInstance{}
@@ -26,16 +30,18 @@ var _ Context = &ContextInstance{}
 // can safely incorporate it into its own structs to extend the functionality provided by
 // Bowtie
 type ContextInstance struct {
-	r *http.Request
-	w *ResponseWriter
+	r         *http.Request
+	w         *ResponseWriter
+	startTime time.Time
 }
 
 // NewContext is a ContextFactory that creates a basic context. You will probably want to create
 // your own context and context factory that extends the basic context for your uses
 func NewContext(r *http.Request, w http.ResponseWriter) Context {
 	return &ContextInstance{
-		r: r,
-		w: NewResponseWriter(w),
+		r:         r,
+		w:         NewResponseWriter(w),
+		startTime: time.Now(),
 	}
 }
 
@@ -47,4 +53,9 @@ func (c *ContextInstance) Request() *http.Request {
 // Response returns the response writer assocaited with the context
 func (c *ContextInstance) Response() *ResponseWriter {
 	return c.w
+}
+
+// GetRunningTime returns the amount of time during which this request has been running
+func (c *ContextInstance) GetRunningTime() time.Duration {
+	return time.Now().Sub(c.startTime)
 }
