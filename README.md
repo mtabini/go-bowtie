@@ -4,7 +4,33 @@ Bowtie is an HTTP middleware for Go. It makes heavy use of interfaces to provide
 
 ## Getting started
 
-Standing up a basic Bowtie server only requires a few lines of code:
+Standing up a [basic Bowtie](#The-quick-server) server with a default router and a few useful middlewares only requires a few lines of code:
+
+```go
+package main
+
+import (
+    "github.com/mtabini/go-bowtie"
+    "github.com/mtabini/go-bowtie/middleware"
+    "github.com/mtabini/go-bowtie/quick"
+    "net/http"
+)
+
+func main() {
+    // Create a new Bowtie server
+    s := quick.New()
+
+    s.GET("/test/:id", func(c bowtie.Context) {
+        id := c.(*middleware.RouterContext).Params.ByName("id")
+
+        c.Response().WriteString("The ID is " + id)
+    })
+
+    http.ListenAndServe(":8000", s)
+}
+```
+
+Like all comparable systems, however, Bowtie becomes powerful once you start adding middlewares to it. Let's start, then with the most basic server—one that does, well, _nothing:_
 
 ```go
 package main
@@ -21,11 +47,9 @@ func main() {
 }
 ```
 
-Like all comparable systems, however, Bowtie becomes powerful once you start adding middlewares to it.
-
 ## Contexts
 
-Bowtie works by listening for an HTTP(S) connection and then creating an execution context that encapsulates its primary elements (that is, a request object and a response writer). It then executes a series of zero or more middlewares against this context until either some data is written to the output or an error occurs.
+Bowtie works by taking an HTTP request associating it with an _execution context_ that encapsulates its primary elements (that is, a request object and a response writer). It then executes a series of zero or more middlewares against this context until either some data is written to the output or an error occurs.
 
 The [context](http://godoc.org/github.com/mtabini/go-bowtie#Context) is encapsulate by a simple interface that exposes the HTTP request and response writer. The server exposes an [AddContextFactory](http://godoc.org/github.com/mtabini/go-bowtie#Server.AddContextFactory) function that can be used to extend the functionality associated with the context with your own structs.
 
@@ -67,7 +91,7 @@ In this fashion, you (or your middlewares) can extend the context as many times 
 
 ## Middlewares
 
-In order to do so, you will need to write (or, at least, use) a middleware. Luckily, that's easy:
+In order to do really do anything with Bowtie, you will need to write (or, at least, use) one or more middlewares. Luckily, that's easy:
 
 ```go
 func MyMiddleware(c bowtie.Context, next func()) {
@@ -81,7 +105,7 @@ func MyMiddleware(c bowtie.Context, next func()) {
 }
 ```
 
-As you can see, the middleware is simply a function that receives a context interface as its first argument. We can then cast the context to our own specialized struct and take advantage of its functionality.
+As you can see, the middleware is simply a function that receives a context interface as its first argument. We can then cast the context to our own specialized struct and take advantage of its functionality if necessary.
 
 The second argument to a middleware is a reference to a function that can be called to delay the execution of the middleware until after all other middlewares have run. This is handy for things like logging and error management, but you can ignore it in most cases—in fact, your middleware does _not_ need to return anything; it can simply exit when it's done.
 
@@ -222,10 +246,57 @@ The main changes from the Schmidt's original router are as follows:
 
 ## Bundled middlewares
 
+Bowtie comes bundled with a few more middlewares:
 
+- [CORSHandler](https://godoc.org/github.com/mtabini/go-bowtie/middleware#CORSHandler) makes quick work of handling CORS requests, and information from the router to provide precise answers to `OPTIONS` pre-flight requests.
+- [ErrorReporter](https://godoc.org/github.com/mtabini/go-bowtie/middleware#ErrorReporter) handles errors and outputs them safely to the output stream.
+- [Logger](https://godoc.org/github.com/mtabini/go-bowtie/middleware#Logger) handles logging. It comes with both plaintext and [Bunyan](https://github.com/mtabini/go-bunyan) output handlers.
+- [Recovery](https://godoc.org/github.com/mtabini/go-bowtie/middleware#Recovery) handles panics gracefully, turning them into 500 errors and capturing all the appropriate details for later logging.
 
+## The quick server
 
+What about the `quick` server listed at the beginning? It provides a simple set of defaults that gets you going very quickly; by calling `New()`, you get a struct that contains both a `bowtie.Server` and a `bowtie/middleware.Router`, plus a few pre-set middlewares, roughly equivalent to:
 
+```go
+func New() *QuickServer {
+    r := middleware.NewRouter()
+
+    s := bowtie.NewServer()
+
+    s.AddMiddleware(middleware.NewLogger(middleware.MakePlaintextLogger()))
+    s.AddMiddleware(middleware.Recovery)
+    s.AddMiddleware(middleware.ErrorReporter)
+
+    cors := middleware.NewCORSHandler(r)
+
+    cors.SetDefaults()
+
+    s.AddMiddlewareProvider(cors)
+
+    s.AddMiddlewareProvider(r)
+
+    return &QuickServer{
+        s,
+        r,
+    }
+}
+```
+
+## Bowtie compared to other Go frameworks
+
+Bowtie borrows liberally—both in ideas and in code—from several other Go frameworks. Adopting [httprouter](https://github.com/julienschmidt/httprouter) as the default seemed like a good idea, given its raw speed. The only changes made were integrating Julien Schmidt's code with Bowtie's context-based execution, and allowing multiple handlers to be attached to a particular route.
+
+Bowtie was also inspired by [Go-Martini](https://github.com/go-martini/martini)'s simplicity and immediateness. Even though Martini's design is not idiomatic to Go, it is perhaps one of the easiest frameworks to pick up and use. In addition to adopting bits of its code, Bowtie strives for the same kind of approachable and immediateness.
+
+Finally, the idea of a running context is borrowed from [gin-gonic](https://github.com/gin-gonic/gin). The main difference between the two is that Bowtie forces the use of Go interface for carrying custom information through the context, whereas Gin allows you to append arbitrary data to it. This seemed like a more sensible approach that allows Go to do its job by providing type security and strictness.
+
+Bowtie's error management comes from my personal fixation with safety. I don't want to leak information, and I don't want developers to worry about whether they will.
+
+## Benchmarks
+
+None. Most of the slowness in a web app comes from places other than the basic framework used to run it, and therefore benchmarks that are only concerned with the raw speed of a router are a bit misleading.
+
+That said, Bowtie reliance on httprouter should mean that you can expect comparable speed from it—and perhaps a level of efficiency equivalent with Gin's.
 
 
 
