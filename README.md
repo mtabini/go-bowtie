@@ -49,9 +49,9 @@ func main() {
 
 ## Contexts
 
-Bowtie works by taking an HTTP request associating it with an _execution context_ that encapsulates its primary elements (that is, a request object and a response writer). It then executes a series of zero or more middlewares against this context until either some data is written to the output or an error occurs.
+Bowtie works by taking an HTTP request associating it with an [_execution context_](http://godoc.org/github.com/mtabini/go-bowtie#Context) that encapsulates its primary elements (that is, a request object and a response writer). It then executes a series of zero or more middlewares against this context until either some data is written to the output or an error occurs.
 
-The [context](http://godoc.org/github.com/mtabini/go-bowtie#Context) is encapsulate by a simple interface that exposes the HTTP request and response writer. The server exposes an [AddContextFactory](http://godoc.org/github.com/mtabini/go-bowtie#Server.AddContextFactory) function that can be used to extend the functionality associated with the context with your own structs.
+The server exposes an [AddContextFactory](http://godoc.org/github.com/mtabini/go-bowtie#Server.AddContextFactory) function that can be used to extend the functionality associated with the context with your own structs. You can add multiple context factories and have each build a new context on top of the previous one.
 
 For example, suppose that you want to store come configuration parameters inside your own context—say, the URL to your database. You can create a custom context like such:
 
@@ -111,7 +111,7 @@ The second argument to a middleware is a reference to a function that can be cal
 
 ## Middleware providers
 
-As you can imagine, the creation of new context types and middlewares often goes hand-in-hand; therefore, a Bowtie server also defines [`MiddlewareProvider`](http://godoc.org/github.com/mtabini/go-bowtie#MiddlewareProvider) interface that can be used to handily couple these two operations in a single call.
+As you can imagine, the creation of new context types and middlewares often goes hand-in-hand; therefore, a Bowtie server also defines a [`MiddlewareProvider`](http://godoc.org/github.com/mtabini/go-bowtie#MiddlewareProvider) interface that can be used to handily couple these two operations in a single call.
 
 For example, we could refactor our context factory and middleware into a unified struct that gives us more reusability:
 
@@ -155,12 +155,14 @@ func main() {
 
 As you can see, in addition to keeping things simple by not having to add both a middleware and a context, we also gain the ability to let the developer choose the database URL when she instantiates the provider at runtime.
 
-## Bowtie's response writer
+## Bowtie's request and response writer
 
-Bowtie replaces `http.ResponseWriter` with [its own interface](http://godoc.org/github.com/mtabini/go-bowtie#ResponseWriter) that provides a few additional convenience methods for writing strings and serializing JSON, as well as managing errors. In particular, you may find the functions in the form
+Bowtie extends `http.Request` with a handful of functions designed to make reading the request's data a bit easier.
+
+Also replaced is `http.ResponseWriter`; Bowtie comes with [its own interface](http://godoc.org/github.com/mtabini/go-bowtie#ResponseWriter) that provides a few additional convenience methods for writing strings and serializing JSON, as well as managing errors. In particular, you may find the functions in the form
 
 ```go
-ResponseWriter.f(data, error)
+ResponseWriter.WriteXXXOrError(data, error)
 ```
 
 useful for dealing with the common Go pattern of returning a `(data, error)` tuple from a function call. If the error is not nil, it is added to the response writer; otherwise, the data is written to the output stream. For example:

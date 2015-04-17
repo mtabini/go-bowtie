@@ -223,7 +223,7 @@ func (r *Router) Serve(c bowtie.Context, next func()) {
 				} else {
 					req.URL.Path = path + "/"
 				}
-				http.Redirect(c.Response(), c.Request(), req.URL.String(), code)
+				http.Redirect(c.Response(), c.Request().Request, req.URL.String(), code)
 				return
 			}
 
@@ -235,7 +235,7 @@ func (r *Router) Serve(c bowtie.Context, next func()) {
 				)
 				if found {
 					req.URL.Path = string(fixedPath)
-					http.Redirect(c.Response(), c.Request(), req.URL.String(), code)
+					http.Redirect(c.Response(), c.Request().Request, req.URL.String(), code)
 					return
 				}
 			}

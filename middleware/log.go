@@ -42,7 +42,7 @@ func MakeBunyanLogger(logger bunyan.Logger) Logger {
 
 		e := bunyan.NewLogEntry(bunyan.Info, fmt.Sprintf("%s %s", req.Method, req.URL.RequestURI()))
 
-		e.SetRequest(req)
+		e.SetRequest(req.Request)
 		e.SetResponseStatusCode(res.Status())
 
 		e.SetCompletedIn(fmt.Sprintf("%v", c.GetRunningTime()))

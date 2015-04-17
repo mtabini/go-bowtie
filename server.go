@@ -76,6 +76,10 @@ func (s *Server) Run(c Context) {
 	mwIndex := -1
 	mwCount := len(s.middlewares)
 
+	if body := c.Request().Body; body != nil {
+		defer body.Close()
+	}
+
 	var next func()
 
 	next = func() {

@@ -50,7 +50,7 @@ func TestContext(t *testing.T) {
 	w := newMockWriter()
 	c := newLocalContext(r, w)
 
-	if c.Request() != r {
+	if c.Request().Request != r {
 		t.Error("Unexpectedly received the wrong request object")
 	}
 

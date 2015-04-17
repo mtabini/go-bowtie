@@ -15,7 +15,7 @@ type ContextFactory func(previous Context) Context
 // and response
 type Context interface {
 	// Request returns the request object associated with this request
-	Request() *http.Request
+	Request() *Request
 
 	// Response returns the response writer associated with this request
 	Response() ResponseWriter
@@ -30,7 +30,7 @@ var _ Context = &ContextInstance{}
 // can safely incorporate it into its own structs to extend the functionality provided by
 // Bowtie
 type ContextInstance struct {
-	r         *http.Request
+	r         *Request
 	w         ResponseWriter
 	startTime time.Time
 }
@@ -39,14 +39,14 @@ type ContextInstance struct {
 // your own context and context factory that extends the basic context for your uses
 func NewContext(r *http.Request, w http.ResponseWriter) Context {
 	return &ContextInstance{
-		r:         r,
+		r:         NewRequest(r),
 		w:         NewResponseWriter(w),
 		startTime: time.Now(),
 	}
 }
 
 // Request returns the request associated with the context
-func (c *ContextInstance) Request() *http.Request {
+func (c *ContextInstance) Request() *Request {
 	return c.r
 }
 
