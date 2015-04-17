@@ -49,7 +49,7 @@ func (m *MyMiddlewareProvider) Middleware() bowtie.Middleware {
 	}
 }
 
-func ExampleServerMiddleware() {
+func ExampleServer_middleware() {
 	// Create a new Bowtie server
 	s := bowtie.NewServer()
 
