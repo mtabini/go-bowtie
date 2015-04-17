@@ -12,7 +12,7 @@ import (
 // Note how the router creates its own Context instance, which
 // allows it to add the new property `Params` that we can then use
 // by re-casting the generic context.
-func echoValue(c bowtie.Context) {
+func EchoValue(c bowtie.Context) {
 	id := c.(*RouterContext).Params.ByName("id")
 
 	c.Response().WriteString("The ID is " + id)
@@ -24,7 +24,7 @@ func echoValue(c bowtie.Context) {
 // cause it to interrupt the chain if it detects an error.
 //
 // This makes splitting functionality and reusing code easier.
-func validateValue(c bowtie.Context) {
+func ValidateValue(c bowtie.Context) {
 	id := c.(*RouterContext).Params.ByName("id")
 
 	if _, err := strconv.ParseInt(id, 10, 64); err != nil {
@@ -58,8 +58,8 @@ func ExampleServer_routing() {
 
 	// Define our routes
 
-	r.GET("/test/:id", echoValue)
-	r.GET("/validate/:id", validateValue, echoValue)
+	r.GET("/test/:id", EchoValue)
+	r.GET("/validate/:id", ValidateValue, EchoValue)
 
 	s.AddMiddleware(ErrorReporter)
 	s.AddMiddlewareProvider(r)
