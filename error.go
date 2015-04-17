@@ -15,12 +15,14 @@ type Error interface {
 	error
 	fmt.Stringer
 	json.Marshaler
-	// GetStatusCode return the error's status code
+	// StatusCode return the error's status code
 	StatusCode() int
-	// GetMessage returns the error's message
+	// Message returns the error's message
 	Message() string
-	// GetData returns the error's associated data
+	// Data returns the error's associated data
 	Data() interface{}
+	// SetData sets the error's associated data
+	SetData(interface{})
 	// GetPrivateRepresentation a private representation of the error. Useful for logging.
 	PrivateRepresentation() map[string]interface{}
 	// GetStackTrace returns the stack trace associated with this error, if any
@@ -116,6 +118,11 @@ func (e *ErrorInstance) Message() string {
 // Returns the data associated with e
 func (e *ErrorInstance) Data() interface{} {
 	return e.data
+}
+
+// Sets the data associated with e
+func (e *ErrorInstance) SetData(data interface{}) {
+	e.data = data
 }
 
 // Returns a private representation of e
