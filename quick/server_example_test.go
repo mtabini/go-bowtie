@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func main() {
+func Example_quick_server() {
 	// Create a new Bowtie quick server
 	s := New()
 
