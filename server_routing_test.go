@@ -7,12 +7,24 @@ import (
 	"strconv"
 )
 
+// echoValue is a handler that retrieves the parameter `id` from the
+// router's context and outputs it back to the user.
+//
+// Note how the router creates its own bowtie.Context instance, which
+// allows it to add the new property `Params` that we can then use
+// by re-casting the generic context.
 func echoValue(c bowtie.Context) {
 	id := c.(*middleware.RouterContext).Params.ByName("id")
 
 	c.Response().WriteString("The ID is " + id)
 }
 
+// validateValue checks that the parameter `id` supplied to the
+// router is, in fact, an integer. Because Bowtie's router supports
+// handler chanining, we can place this in front of `echoValue` and
+// cause it to interrupt the chain if it detects an error.
+//
+// This makes splitting functionality and reusing code easier.
 func validateValue(c bowtie.Context) {
 	id := c.(*middleware.RouterContext).Params.ByName("id")
 
@@ -29,6 +41,8 @@ func ExampleServer_routing() {
 
 	r := middleware.NewRouter()
 
+	// Define our routes
+
 	r.GET("/test/:id", echoValue)
 	r.GET("/validate/:id", validateValue, echoValue)
 
@@ -36,6 +50,7 @@ func ExampleServer_routing() {
 	s.AddMiddlewareProvider(r)
 
 	// bowtie.Server can be used directly with http.ListenAndServe
+
 	http.ListenAndServe(":8000", s)
 	// OUTPUT
 	// > GET /test/123
