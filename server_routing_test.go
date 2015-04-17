@@ -52,7 +52,7 @@ func ExampleServer_routing() {
 	// bowtie.Server can be used directly with http.ListenAndServe
 
 	http.ListenAndServe(":8000", s)
-	// OUTPUT
+	// Output:
 	// > GET /test/123
 	//
 	// < HTTP/1.1 200 OK
