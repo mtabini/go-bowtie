@@ -2,6 +2,8 @@
 
 Bowtie is an HTTP middleware for Go. It makes heavy use of interfaces to provide a programming model that is both idiomatic and easily extensible (with, hopefully, relatively minimal overhead).
 
+Here's a bit of info on [how Bowtie compares to other Go Web frameworks](#bowtie-compared-to-other-go-frameworks).
+
 ## Getting started
 
 Standing up a [basic Bowtie](#The-quick-server) server with a default router and a few useful middlewares only requires a few lines of code:
@@ -30,7 +32,7 @@ func main() {
 }
 ```
 
-Like all comparable systems, however, Bowtie becomes powerful once you start adding middlewares to it. Let's start, then with the most basic server—one that does, well, _nothing:_
+Like all comparable systems Bowtie draws its power on a series of middlewares that perform specific tasks. To understand how this all works, let's start, then, with the most basic server—one that does, well, _nothing:_
 
 ```go
 package main
