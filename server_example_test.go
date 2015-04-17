@@ -1,4 +1,4 @@
-package main
+package bowtie
 
 import (
 	"github.com/mtabini/go-bowtie"
