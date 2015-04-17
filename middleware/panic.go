@@ -1,4 +1,3 @@
-// Borrowed from https://github.com/go-martini/martini/blob/master/recovery.go
 package middleware
 
 import (
@@ -8,6 +7,8 @@ import (
 
 // Recovery returns a middleware that recovers from any panics and writes a 500 if there was one.
 // While Martini is in development mode, Recovery will also output the panic as HTML.
+//
+// Borrowed from https://github.com/go-martini/martini/blob/master/recovery.go
 func Recovery(c bowtie.Context, next func()) {
 	defer func() {
 		if err := recover(); err != nil {

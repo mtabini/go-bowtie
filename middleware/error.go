@@ -4,6 +4,10 @@ import (
 	"github.com/mtabini/go-bowtie"
 )
 
+// ErrorReporter is a middleware that safely handles error reporting
+// by outputting the errors that have accumulated in the context's response
+// writer. It computes the status of a request from the maximum response
+// status of all the errors (if any are present).
 func ErrorReporter(c bowtie.Context, next func()) {
 	next()
 

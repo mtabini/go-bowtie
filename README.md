@@ -166,6 +166,63 @@ Bowtie's response writer maintains its own error array, which is populated eithe
 
 Note, however, that the server doesn't actually do anything with the error array; in order to output the errors to the users, you will need to use the `Error` middleware (see below).
 
+## Routing
+
+Although you are free to use your own router, Bowtie comes with a slightly modified copy of Julien Schmidt's trie-based [httprouter](https://github.com/julienschmidt/httprouter) that is ready to go:
+
+```go
+package main
+
+import (
+    "github.com/mtabini/go-bowtie"
+    "github.com/mtabini/go-bowtie/middleware"
+    "net/http"
+    "strconv"
+)
+
+func echoValue(c bowtie.Context) {
+    id := c.(*middleware.RouterContext).Params.ByName("id")
+
+    c.Response().WriteString("The ID is " + id)
+}
+
+func validateValue(c bowtie.Context) {
+    id := c.(*middleware.RouterContext).Params.ByName("id")
+
+    if _, err := strconv.ParseInt(id, 10, 64); err != nil {
+        c.Response().AddError(bowtie.NewError(400, "Invalid, non-numeric ID %s", id))
+    }
+}
+
+func ExampleServer_routing() {
+    // Create a new Bowtie server
+    s := bowtie.NewServer()
+
+    // Register middlewares
+
+    r := middleware.NewRouter()
+
+    r.GET("/test/:id", echoValue)
+    r.GET("/validate/:id", validateValue, echoValue)
+
+    s.AddMiddleware(middleware.ErrorReporter)
+    s.AddMiddlewareProvider(r)
+
+    // bowtie.Server can be used directly with http.ListenAndServe
+    http.ListenAndServe(":8000", s)
+}
+```
+
+The main changes from the Schmidt's original router are as follows:
+
+- Bowtie's router defines its own context, called `RouterContext`; this contains a `Params` property that encapsulates the router's parameters.
+- Bowtie's version passes `bowtie.Context` to its handlers instead of instances of the HTTP request and response writer.
+- Bowtie's version supports multiple handlers per router, which are chained together and executed in sequence until either the end of the list is reached or one of the handlers writes to the output stream. The example above takes advantage of this feature by prepending the `validateValue` handler to `echoValue` and only allowing the latter to run if the data passed to by the client satisfies certain criteria.
+- Finally, Bowtie's router introduces a `GetSupportedMethods` function that can be used to determine which HTTP methods are supported for a given route. This, in turn, is used by the [CORS middleware](https://godoc.org/github.com/mtabini/go-bowtie/middleware#NewCORSHandler) to respond to `OPTIONS` requests properly.
+
+## Bundled middlewares
+
+
 
 
 

@@ -1,17 +1,16 @@
 package bowtie
 
 import (
-	"github.com/mtabini/go-bowtie"
 	"net/http"
 )
 
 // Struct MyContext extends Bowtie's context and adds more features to it
 type MyContext struct {
-	bowtie.Context
+	Context
 	DBURL string
 }
 
-// Struct MyMiddlewareProvider satisfies the bowtie.MiddlewareProvider interface
+// Struct MyMiddlewareProvider satisfies the MiddlewareProvider interface
 // and provides both a middleware and a context factory
 type MyMiddlewareProvider struct {
 	DBURL string
@@ -21,8 +20,8 @@ type MyMiddlewareProvider struct {
 // existing context. At execution time, the middleware can then cast
 // the context that the server passes to it to MyContext and take
 // advantage of its functionality.
-func (m *MyMiddlewareProvider) ContextFactory() bowtie.ContextFactory {
-	return func(previous bowtie.Context) bowtie.Context {
+func (m *MyMiddlewareProvider) ContextFactory() ContextFactory {
+	return func(previous Context) Context {
 		// Return an instance of our context that encapsulates the previous
 		// context created for the server
 
@@ -37,8 +36,8 @@ func (m *MyMiddlewareProvider) ContextFactory() bowtie.ContextFactory {
 // use to manipulate the current HTTP request, and a next function that
 // can be called to delay the middleware's execution until after all
 // other middlewares have run.
-func (m *MyMiddlewareProvider) Middleware() bowtie.Middleware {
-	return func(c bowtie.Context, next func()) {
+func (m *MyMiddlewareProvider) Middleware() Middleware {
+	return func(c Context, next func()) {
 		// Cast the context to our context and get the DB URL
 
 		myC := c.(*MyContext)
@@ -51,12 +50,12 @@ func (m *MyMiddlewareProvider) Middleware() bowtie.Middleware {
 
 func ExampleServer_middleware() {
 	// Create a new Bowtie server
-	s := bowtie.NewServer()
+	s := NewServer()
 
 	// Register our new middleware provider. This adds our context factory
 	// to it, and injects our middleware into its execution queue.
 	s.AddMiddlewareProvider(&MyMiddlewareProvider{DBURL: "db:/my/database"})
 
-	// bowtie.Server can be used directly with http.ListenAndServe
+	// Server can be used directly with http.ListenAndServe
 	http.ListenAndServe(":8000", s)
 }

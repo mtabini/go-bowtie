@@ -10,8 +10,13 @@ import (
 	"time"
 )
 
+// Logger is a generic logger function that takes a bowtie context and
+// is tasked with logging the request it encapsulates. You pass this
+// value to NewLogger and then add the resulting middleware to your server.
 type Logger func(c bowtie.Context)
 
+// PlaintextLogger logs requests to standard output using this space-limited simple format:
+// RemoteAddress Method URL Status RunningTime
 func PlaintextLogger(c bowtie.Context) {
 	req := c.Request()
 	res := c.Response()
@@ -19,6 +24,8 @@ func PlaintextLogger(c bowtie.Context) {
 	log.Printf("%s %s %s %d %f", req.RemoteAddr, req.Method, req.URL, res.Status(), float64(c.GetRunningTime())/float64(time.Second))
 }
 
+// BunyanLogger logs requests using a Bunyan logger. See https://github.com/mtabini/go-bunyan
+// for more information
 func MakeBunyanLogger(logger bunyan.Logger) Logger {
 	return func(c bowtie.Context) {
 		req := c.Request()
@@ -50,6 +57,9 @@ func MakeBunyanLogger(logger bunyan.Logger) Logger {
 	}
 }
 
+// NewLogger creates a new logger middleware. It waits until all other
+// middlewares have finished running, then calls `logger` with the
+// request's context.
 func NewLogger(logger Logger) bowtie.Middleware {
 	return func(c bowtie.Context, next func()) {
 		next()

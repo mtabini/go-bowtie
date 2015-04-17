@@ -1,35 +1,36 @@
-// Copyright 2013 Julien Schmidt. All rights reserved.
+package middleware
+
+import (
+	"github.com/mtabini/go-bowtie"
+	"net/http"
+)
+
+// Handle is a function that can be registered to a route to handle HTTP
+// requests. Like http.HandlerFunc, but has a third parameter for the values of
+// wildcards (variables).
+type Handle func(c bowtie.Context)
+type HandleList []Handle
+
+type RouterContext struct {
+	bowtie.Context
+	Params Params
+}
+
+var _ bowtie.MiddlewareProvider = &Router{}
+
+func RouterContextFactory(previous bowtie.Context) bowtie.Context {
+	return &RouterContext{
+		Context: previous,
+		Params:  Params{},
+	}
+}
+
+// Original Copyright 2013 Julien Schmidt. All rights reserved.
+// Modified by Marco Tabini 2015
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
-
-// Package httprouter is a trie based high performance HTTP request router.
 //
-// A trivial example is:
-//
-//  package main
-//
-//  import (
-//      "fmt"
-//      "github.com/julienschmidt/httprouter"
-//      "net/http"
-//      "log"
-//  )
-//
-//  func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-//      fmt.Fprint(w, "Welcome!\n")
-//  }
-//
-//  func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-//      fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
-//  }
-//
-//  func main() {
-//      router := httprouter.New()
-//      router.GET("/", Index)
-//      router.GET("/hello/:name", Hello)
-//
-//      log.Fatal(http.ListenAndServe(":8080", router))
-//  }
+// httprouter's original code can be found at https://github.com/julienschmidt/httprouter
 //
 // The router matches incoming requests by the request method and the path.
 // If a handle is registered for this path and method, the router delegates the
@@ -65,44 +66,20 @@
 //   /files                              no match, but the router would redirect
 //
 // The value of parameters is saved as a slice of the Param struct, consisting
-// each of a key and a value. The slice is passed to the Handle func as a third
-// parameter.
-// There are two ways to retrieve the value of a parameter:
+// each of a key and a value. The slice is passed to the Handle func as part of
+// an extension to the built-in bowtie context.
+//
+// There are two ways to retrieve the value of a parameter; if c is the context
+// passed to the handler:
+//
+//  ps := c.(*RouterContext).Params
+//
 //  // by the name of the parameter
 //  user := ps.ByName("user") // defined by :user or *user
 //
 //  // by the index of the parameter. This way you can also get the name (key)
 //  thirdKey   := ps[2].Key   // the name of the 3rd parameter
 //  thirdValue := ps[2].Value // the value of the 3rd parameter
-package middleware
-
-import (
-	"github.com/mtabini/go-bowtie"
-	"net/http"
-)
-
-// Handle is a function that can be registered to a route to handle HTTP
-// requests. Like http.HandlerFunc, but has a third parameter for the values of
-// wildcards (variables).
-type Handle func(c bowtie.Context)
-type HandleList []Handle
-
-type RouterContext struct {
-	bowtie.Context
-	Params Params
-}
-
-var _ bowtie.MiddlewareProvider = &Router{}
-
-func RouterContextFactory(previous bowtie.Context) bowtie.Context {
-	return &RouterContext{
-		Context: previous,
-		Params:  Params{},
-	}
-}
-
-// Router is a http.Handler which can be used to dispatch requests to different
-// handler functions via configurable routes
 type Router struct {
 	trees map[string]*node
 
@@ -207,7 +184,7 @@ func (r *Router) GetSupportedMethods(path string) []string {
 }
 
 // ServeHTTP makes the router implement the http.Handler interface.
-func (r *Router) ServeHTTP(c bowtie.Context, next func()) {
+func (r *Router) Serve(c bowtie.Context, next func()) {
 	req := c.Request()
 
 	if root := r.trees[req.Method]; root != nil {
@@ -268,7 +245,7 @@ func (r *Router) ServeHTTP(c bowtie.Context, next func()) {
 // MiddlewareProvider interface
 
 func (r *Router) Middleware() bowtie.Middleware {
-	return r.ServeHTTP
+	return r.Serve
 }
 
 func (r *Router) ContextFactory() bowtie.ContextFactory {
