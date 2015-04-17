@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+type ResponseWriterFactory func(w http.ResponseWriter) ResponseWriter
+
+// Interface ResponseWriter extends the functionality provided by `http.ResponseWriter`, mainly
+// by adding a few convenience methods for writing strings and JSON data and dealing with errors.
+//
+// You can provide your own extended ResponseWriter by creating a custom ResponseWriterFactory
+// function and setting it to the ResponseWriterFactory property of your server.
 type ResponseWriter interface {
 	http.ResponseWriter
 

@@ -20,15 +20,17 @@ type MiddlewareProvider interface {
 // Struct Server is a Bowtie server. It provides a handler compatible with http.ListenAndServe
 // that creates a context and executes any attached middleware.
 type Server struct {
-	middlewares      []Middleware
-	contextFactories []ContextFactory
+	middlewares           []Middleware
+	contextFactories      []ContextFactory
+	ResponseWriterFactory ResponseWriterFactory
 }
 
 // NewServer initializes and returns a new Server instance.
 func NewServer() *Server {
 	return &Server{
-		middlewares:      []Middleware{},
-		contextFactories: []ContextFactory{},
+		middlewares:           []Middleware{},
+		contextFactories:      []ContextFactory{},
+		ResponseWriterFactory: NewResponseWriter,
 	}
 }
 
@@ -59,7 +61,7 @@ func (s *Server) AddMiddlewareProvider(p MiddlewareProvider) {
 // except for testing purposes. Instead, you should extend the server context
 // with your struct and provide a context factory to the server
 func (s *Server) NewContext(r *http.Request, w http.ResponseWriter) Context {
-	c := NewContext(r, w)
+	c := NewContext(r, s.ResponseWriterFactory(w))
 
 	for _, factory := range s.contextFactories {
 		c = factory(c)
