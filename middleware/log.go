@@ -20,7 +20,6 @@ import (
 //    s := bowtie.NewServer()
 //
 //    s.AddMiddleware(middleware.NewLogger(middleware.MakePlaintextLogger()))
-
 type Logger func(c bowtie.Context)
 
 // MakePlaintextLogger logs requests to standard output using this space-limited simple format:
