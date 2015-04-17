@@ -22,7 +22,7 @@ func New() *QuickServer {
 
 	s := bowtie.NewServer()
 
-	s.AddMiddleware(middleware.NewLogger(middleware.PlaintextLogger))
+	s.AddMiddleware(middleware.NewLogger(middleware.MakePlaintextLogger()))
 	s.AddMiddleware(middleware.Recovery)
 	s.AddMiddleware(middleware.ErrorReporter)
 
