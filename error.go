@@ -23,7 +23,7 @@ type Error interface {
 	Data() interface{}
 	// SetData sets the error's associated data
 	SetData(interface{})
-	// GetPrivateRepresentation a private representation of the error. Useful for logging.
+	// PrivateRepresentation a private representation of the error. Useful for logging.
 	PrivateRepresentation() map[string]interface{}
 	// GetStackTrace returns the stack trace associated with this error, if any
 	StackTrace() []StackFrame

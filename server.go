@@ -69,7 +69,7 @@ func (s *Server) NewContext(r *http.Request, w http.ResponseWriter) Context {
 	c := NewContext(r, s.ResponseWriterFactory(w))
 
 	for _, factory := range s.contextFactories {
-		c = factory(c)
+		factory(c)
 	}
 
 	return c

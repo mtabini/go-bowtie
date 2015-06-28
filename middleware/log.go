@@ -35,7 +35,7 @@ func MakePlaintextLogger() Logger {
 
 // BunyanLogger logs requests using a Bunyan logger. See https://github.com/mtabini/go-bunyan
 // for more information
-func MakeBunyanLogger(logger bunyan.Logger) Logger {
+func MakeBunyanLogger(logger *bunyan.Logger) Logger {
 	return func(c bowtie.Context) {
 		req := c.Request()
 		res := c.Response()

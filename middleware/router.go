@@ -14,18 +14,12 @@ import (
 type Handle func(c bowtie.Context)
 type HandleList []Handle
 
-type RouterContext struct {
-	bowtie.Context
-	Params Params
-}
-
 var _ bowtie.MiddlewareProvider = &Router{}
 
-func RouterContextFactory(previous bowtie.Context) bowtie.Context {
-	return &RouterContext{
-		Context: previous,
-		Params:  Params{},
-	}
+var RouterParamsKey = bowtie.GenerateContextKey()
+
+func RouterContextFactory(context bowtie.Context) {
+	context.Set(RouterParamsKey, Params{})
 }
 
 // Original Copyright 2013 Julien Schmidt. All rights reserved.
@@ -75,7 +69,7 @@ func RouterContextFactory(previous bowtie.Context) bowtie.Context {
 // There are two ways to retrieve the value of a parameter; if c is the context
 // passed to the handler:
 //
-//  ps := c.(*RouterContext).Params
+//  ps := c.(RouterContext).Params()
 //
 //  // by the name of the parameter
 //  user := ps.ByName("user") // defined by :user or *user
@@ -194,7 +188,7 @@ func (r *Router) Serve(c bowtie.Context, next func()) {
 		path := req.URL.Path
 
 		if handles, ps, tsr := root.getValue(path); handles != nil {
-			c.(*RouterContext).Params = ps
+			c.Set(RouterParamsKey, ps)
 
 			index := 0
 
